@@ -1,16 +1,14 @@
-from selenium import webdriver
-from bs4 import BeautifulSoup
+
 import datetime as dt
 import pandas as pd
 import matplotlib.pyplot as plt
-import time # beware sometimes time and datetime get confused
 import streamlit as st
 import numpy as np
 from wordcloud import WordCloud
-import requests
 from collections import Counter
 import altair as alt
-import folium
+
+st.set_option('deprecation.showPyplotGlobalUse', False)
 
 
 df = pd.read_csv("litigation_ext.csv")
