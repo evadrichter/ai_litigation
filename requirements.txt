@@ -4,3 +4,8 @@ matplotlib==3.8.2
 numpy==1.26.3
 streamlit==1.30.0
 wordcloud==1.9.3
+us==3.1.1
+plotly==5.18.0
+fastjsonschema==2.19.1
+jsonschema==4.21.1
+jsonschema-specifications==2023.12.1
