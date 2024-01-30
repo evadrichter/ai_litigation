@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import streamlit as st
 import numpy as np
 from wordcloud import WordCloud
-from collections import Counter
 import altair as alt
 
 st.set_option('deprecation.showPyplotGlobalUse', False)
@@ -94,7 +93,6 @@ if selected_page == "Track AI Litigation":
         # Display the chart in the Streamlit app
     st.altair_chart(chart, use_container_width=True)
 
-
         # Create a Pie Chart
 
         # Create a Pie Chart
@@ -109,36 +107,46 @@ if selected_page == "Track AI Litigation":
     st.altair_chart(piechart, use_container_width=True)
 
     st.header('How have cases been resolved?', divider='gray')
+    df['Status'] = df['Status'].fillna("")
+    def categorize_status(status):
+        if status == "Active":
+            return 'Active'
+        if "Settle" in status:
+            return "Settled"
+        elif 'Inactive' in status:
+            return 'Inactive'
+        elif 'Withdrawn' in status:
+            return 'Withdrawn'
+        elif 'Closed' in status:
+            return 'Closed'
+        elif "Active" in status:
+            return "Active"
+        elif status == "":
+            return "Not specified"
+        else:
+            return 'Unknown'  # Handle other cases if needed
 
-    counts = df["Status"].value_counts()
-    freq = counts.reset_index()
-    freq.columns = ["Status", "Frequency"]
-    freq = freq.sort_values(by='Status', ascending=True)
-    freq = freq.reset_index(drop=True)
-
-
-    chart = alt.Chart(freq).mark_bar(color='#6200ff').encode(
-            y=alt.Y('Status:N', axis=alt.Axis(title='Status', labelAngle=0)),
-            x='Frequency:Q' # Quantitative data for x-axis
-        ).configure_view(
-            strokeWidth=0
-        ).configure_axis(
-            labelFontSize=12,  # Adjust label font size as needed
-            titleFontSize=12
-        ).configure_axisLeft(
-            labelPadding=10  # Increase padding for the y-axis labels
-        )
-
-
-        # Display the chart in the Streamlit app
-    st.altair_chart(chart, use_container_width=True)
-
+    # Apply the categorize_status function to create the "Status_Cat" column
+    df['Status_Cat'] = df['Status'].apply(categorize_status)
 
     # Radio button for selection
+    #st.write(df)
+        
+    # Calculate the value counts of each category
+    value_counts = df['Status_Cat'].value_counts().reset_index()
+    value_counts.columns = ['Status_Cat', 'Count']
+    # Create a pie chart using Vega-Lite
+    piechart2 = alt.Chart(value_counts).mark_arc().encode(
+        theta=alt.Theta(field='Count', type='quantitative', stack = "normalize"),
+        color=alt.Color(field='Status_Cat', type='nominal', sort = "ascending"),
+        order=alt.Order(field='Count', type= 'quantitative', sort = "ascending"), 
+        tooltip=['Status_Cat', 'Count']
+    )
 
-    
+    # Display the pie chart using Altair
+    st.altair_chart(piechart2, use_container_width=True)
 
-    
+
 
 elif selected_page == "Explore Issues":
     df["Issues"] = df["Issues"].fillna("")
