@@ -21,7 +21,7 @@ st.write("With this tool, you will be able to track all past and ongoing AI liti
 
 with st.sidebar:
     st.title("Track AI Litigation")
-    pages = ["Track AI Litigation", "Explore Issues", "Explore Active Cases" ,"Explore Settled Cases", "About"]
+    pages = ["Track AI Litigation", "Explore Issues", "Explore Active Cases" ,"Explore Settled Cases"]
     selected_page = st.sidebar.radio("Select Page", pages)
     #st.sidebar.text("AI Litigation Database – Search. \n URL: https://blogs.gwu.edu/law-eti/ai-litigation-database-search/. \n Last accessed on 1/30/2024")
     citation_html = """
@@ -138,30 +138,9 @@ if selected_page == "Track AI Litigation":
 
     # Radio button for selection
 
-    st.header('Explore active cases only, sorted my most recent activity', divider='gray')
+    
 
-    status_selection = st.radio("Select Status", ('Active', 'Not Active'))
-
-    # Filter DataFrame based on selection
-    if status_selection == 'Active':
-        filtered_df = df[df['Status'] == 'Active']
-    else:
-        filtered_df = df[df['Status'] != 'Active']
-
-    # Display the filtered DataFrame
-    st.write(filtered_df)
-
-    st.title("United States Map")
-
-    data = {
-    'LAT': [37.7749, 34.0522, 40.7128],  # Example latitude values
-    'LON': [-122.4194, -118.2437, -74.0060]  # Example longitude values
-    }
-    map_df = pd.DataFrame(data)
-
-
-    # Use st.map to display the map centered around the United States
-    st.map(map_df)
+    
 
 elif selected_page == "Explore Issues":
     df["Issues"] = df["Issues"].fillna("")
@@ -209,11 +188,19 @@ elif selected_page == "Explore Issues":
         st.write(f"**Status:** {row['Status']}")
         st.markdown("---")  # Add a horizontal line between rows
 
-    # Create content for each page
-    st.title("Streamlit Case Exploration")
-    st.write("Choose a 'Cause of Action' from the sidebar to filter cases and display details of the selected cases.")
+elif selected_page == "Explore Active Cases":
+    st.header('Explore active cases only, sorted my most recent activity', divider='gray')
 
+    status_selection = st.radio("Select Status", ('Active', 'Not Active'))
 
+    # Filter DataFrame based on selection
+    if status_selection == 'Active':
+        filtered_df = df[df['Status'] == 'Active']
+    else:
+        filtered_df = df[df['Status'] != 'Active']
+
+    # Display the filtered DataFrame
+    st.write(filtered_df)
 
 elif selected_page == "Explore Settled Cases":
     st.title("Explore settled cases")
@@ -251,6 +238,3 @@ elif selected_page == "Explore Settled Cases":
         st.write(f"**Find out more:** {row['Link']}")
         st.write("---")  # Separator between entries
 
-
-elif selected_page == "About":
-    st.write("This tool was created by a Master in Public Policy Student at Harvard Kennedy School.")
