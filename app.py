@@ -6,6 +6,9 @@ import streamlit as st
 import numpy as np
 from wordcloud import WordCloud
 import altair as alt
+import us
+import plotly.express as px
+import json
 
 st.set_option('deprecation.showPyplotGlobalUse', False)
 
@@ -18,7 +21,7 @@ st.write("With this tool, you will be able to track all past and ongoing AI liti
 
 with st.sidebar:
     st.title("Track AI Litigation")
-    pages = ["Track AI Litigation", "Explore Issues", "Explore Active Cases" ,"Explore Settled Cases"]
+    pages = ["Track AI Litigation", "Explore Issues", "Explore Active Cases" ,"Explore Settled Cases", "Explore Locations"]
     selected_page = st.sidebar.radio("Select Page", pages)
     #st.sidebar.text("AI Litigation Database – Search. \n URL: https://blogs.gwu.edu/law-eti/ai-litigation-database-search/. \n Last accessed on 1/30/2024")
     citation_html = """
@@ -244,3 +247,52 @@ elif selected_page == "Explore Settled Cases":
         st.write(f"**Find out more:** {row['Link']}")
         st.write("---")  # Separator between entries
 
+elif selected_page == "Explore Locations":
+    st.header('Where have cases been filed (only includes US locations)?', divider='gray')
+# Function to classify the place based on the jurisdiction
+    def classify_place(jurisdiction):
+        if 'international' in jurisdiction.lower():
+            return 'International'
+        elif "cook county" in jurisdiction.lower():
+            return "Illinois"
+        elif "ca." in jurisdiction.lower() or "cal" in jurisdiction.lower():
+            return "California"
+        elif "n.y." in jurisdiction.lower():
+            return "New York"
+        elif "ga." in jurisdiction.lower():
+            return "Georgia"
+        elif "del." in jurisdiction.lower():
+            return "Delaware"
+        elif "Tenn." in jurisdiction.lower():
+            return "Tennessee"
+        else:
+            # Check against state names and abbreviations
+            for state in us.states.STATES:
+                if state.name in jurisdiction or state.abbr in jurisdiction:
+                    return state.name
+            return 'Other'
+
+    df['NAME'] = df['Jurisdiction'].apply(classify_place)
+
+    frequency = df['NAME'].value_counts()
+
+    # Convert the frequency Series to a DataFrame
+    frequency_df = frequency.reset_index()
+    frequency_df.columns = ['NAME', 'Frequency']
+
+    with open("us-states.json") as geo:
+        states_geojson = json.load(geo)
+
+    # Create the choropleth map
+    fig = px.choropleth(frequency_df, 
+                        geojson=states_geojson, 
+                        locations='NAME', 
+                        featureidkey="properties.NAME",
+                        color='Frequency',
+                        color_continuous_scale="ylorrd",
+                        scope="usa",
+                        hover_name="NAME")
+    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+
+
+    st.plotly_chart(fig)
