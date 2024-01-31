@@ -21,7 +21,7 @@ st.write("With this tool, you will be able to track all past and ongoing AI liti
 
 with st.sidebar:
     st.title("Track AI Litigation")
-    pages = ["Track AI Litigation", "Explore Issues", "Explore Active Cases" ,"Explore Settled Cases", "Explore Locations"]
+    pages = ["Track AI Litigation","Most recent activity" , "Explore Issues","Explore Settled Cases", "Explore Locations"]
     selected_page = st.sidebar.radio("Select Page", pages)
     #st.sidebar.text("AI Litigation Database – Search. \n URL: https://blogs.gwu.edu/law-eti/ai-litigation-database-search/. \n Last accessed on 1/30/2024")
     citation_html = """
@@ -46,7 +46,7 @@ if selected_page == "Track AI Litigation":
 
     # Add content for Page 1
 
-    st.header('When have cases against AI been filed?', divider='gray')
+    st.header('AI Disputes Reached Record Levels in 2023', divider='gray')
 
     # Preprocessing: getting year
     df['Date Action Filed'] = pd.to_datetime(df['Date Action Filed'], errors='coerce')
@@ -64,7 +64,7 @@ if selected_page == "Track AI Litigation":
 
     st.bar_chart(data = year_freq_df, x= "Year", y="Frequency", color="#6200ff")
 
-    st.header('Which algorithms have been sued?', divider='gray')
+    st.header('Clearview AI and ChatGPT Top the List of Most-Sued Algorithms', divider='gray')
 
     algorithm = df['Algorithm'].str.split(', ')
     algorithm = algorithm.dropna()
@@ -109,7 +109,7 @@ if selected_page == "Track AI Litigation":
     # Display the Layered Chart in the Streamlit app
     st.altair_chart(piechart, use_container_width=True)
 
-    st.header('How have cases been resolved?', divider='gray')
+    st.header('Most cases are stil ongoing', divider='gray')
     df['Status'] = df['Status'].fillna("")
     def categorize_status(status):
         if status == "Active":
@@ -137,13 +137,13 @@ if selected_page == "Track AI Litigation":
         
     # Calculate the value counts of each category
     value_counts = df['Status_Cat'].value_counts().reset_index()
-    value_counts.columns = ['Status_Cat', 'Count']
+    value_counts.columns = ['Status', 'Count']
     # Create a pie chart using Vega-Lite
     piechart2 = alt.Chart(value_counts).mark_arc().encode(
         theta=alt.Theta(field='Count', type='quantitative', stack = "normalize"),
-        color=alt.Color(field='Status_Cat', type='nominal', sort = "ascending"),
+        color=alt.Color(field='Status', type='nominal', sort = "ascending"),
         order=alt.Order(field='Count', type= 'quantitative', sort = "ascending"), 
-        tooltip=['Status_Cat', 'Count']
+        tooltip=['Status', 'Count']
     )
 
     # Display the pie chart using Altair
@@ -152,16 +152,17 @@ if selected_page == "Track AI Litigation":
 
 
 elif selected_page == "Explore Issues":
+    st.header("What issues are at stake?")
     df["Issues"] = df["Issues"].fillna("")
     expressions = df["Issues"].str.lower().str.split(', ')
     all_expressions = ' '.join([expression for expressions_list in expressions for expression in expressions_list])
-    wordcloud = WordCloud(width=800, height=400, background_color="white").generate(all_expressions)
+    wordcloud = WordCloud(font_path="AbhayaLibre-Regular.ttf", width=800, height=400, background_color="white", colormap="magma").generate(all_expressions)
 
     # Display the word cloud using Matplotlib
     plt.figure(figsize=(10, 5))
-    plt.imshow(wordcloud, interpolation='bilinear')
+    plt.imshow(wordcloud)
     plt.axis("off")
-    plt.title("Word Cloud")
+
     
     st.pyplot()
 
@@ -171,7 +172,8 @@ elif selected_page == "Explore Issues":
     unique_issues = set(issue_list)
     unique_issues = sorted(unique_issues)
     # Create a multiselect widget to select issues
-    selected_issue = st.selectbox("Select Issues", unique_issues)
+    st.subheader("Explore cases by issue:")
+    selected_issue = st.selectbox("Filter by issue",unique_issues,index=1)
     
     # Filter the DataFrame based on selected issues
     filtered_df = df[df['Issues'].str.contains(selected_issue, case=False, na=False)]
@@ -180,10 +182,10 @@ elif selected_page == "Explore Issues":
 
     
     # Display the filtered DataFrame
-    st.write("Filtered cases in a table:")
+    st.subheader("Explore selected cases in table form:")
     st.write(filtered_df[["Caption", "Brief Description", "Algorithm", "Jurisdiction", "Application Areas", "Cause of Action", "Date Action Filed", "Link", "Status"]])
 
-    st.write("More details on filtered cases: :")
+    st.subheader("Explore selected cases in more detail:")
     # Display each row as Markdown
     for index, row in filtered_df.iterrows():
         st.write(f"## {row['Caption']}")
@@ -193,23 +195,30 @@ elif selected_page == "Explore Issues":
         st.write(f"**Application Areas:** {row['Application Areas']}")
         st.write(f"**Cause of Action:** {row['Cause of Action']}")
         st.write(f"**Date Action Filed:** {row['Date Action Filed']}")
-        st.write(f"**Find our more:** {row['Link']}")
+        st.write(f"**Find out more:** {row['Link']}")
         st.write(f"**Status:** {row['Status']}")
         st.markdown("---")  # Add a horizontal line between rows
 
-elif selected_page == "Explore Active Cases":
-    st.header('Explore active cases only, sorted my most recent activity', divider='gray')
+elif selected_page == "Most recent activity":
+    st.header('Explore 10 cases by most recent activity', divider='gray')
 
-    status_selection = st.radio("Select Status", ('Active', 'Not Active'))
+    df['New Activity'] = pd.to_datetime(df['New Activity'], errors='coerce')
+    df_sorted = df.sort_values(by='New Activity', ascending=False)
+    top_10_cases = df_sorted.head(10)
+    for index, row in top_10_cases.iterrows():
+        st.write(f"### {row['New Activity'].strftime('%B %dth %Y')}")
+        st.write(f"### {row['Caption']}")
+        st.write(f"**Brief Description:** {row['Brief Description']}")
+        st.write(f"**Algorithm:** {row['Algorithm']}")
+        st.write(f"**Jurisdiction:** {row['Jurisdiction']}")
+        st.write(f"**Application Areas:** {row['Application Areas']}")
+        st.write(f"**Cause of Action:** {row['Cause of Action']}")
+        st.write(f"**Date Action Filed:** {row['Date Action Filed']}")
+        st.write(f"**Find out more:** {row['Link']}")
+        st.write(f"**Status:** {row['Status']}")
+        st.markdown("---") 
 
-    # Filter DataFrame based on selection
-    if status_selection == 'Active':
-        filtered_df = df[df['Status'] == 'Active']
-    else:
-        filtered_df = df[df['Status'] != 'Active']
 
-    # Display the filtered DataFrame
-    st.write(filtered_df)
 
 elif selected_page == "Explore Settled Cases":
     st.title("Explore settled cases")
