@@ -206,7 +206,7 @@ elif selected_page == "Most recent activity":
     df_sorted = df.sort_values(by='New Activity', ascending=False)
     top_10_cases = df_sorted.head(10)
     for index, row in top_10_cases.iterrows():
-        st.write(f"### **Recent Activity:** {row['New Activity'].strftime('%B %dth %Y')}")
+        st.write(f"### **New Activity:** {row['New Activity'].strftime('%B %dth %Y')}")
         st.write(f"### {row['Caption']}")
         st.write(f"**Brief Description:** {row['Brief Description']}")
         st.write(f"**Algorithm:** {row['Algorithm']}")
