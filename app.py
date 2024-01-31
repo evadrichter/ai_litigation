@@ -13,7 +13,10 @@ import json
 st.set_option('deprecation.showPyplotGlobalUse', False)
 
 
-df = pd.read_csv("litigation_ext.csv")
+df = pd.read_csv("data/litigation_ext.csv")
+year_freq_df = pd.read_csv("data/year_fr.csv")
+algo_fr = pd.read_csv("data/algo_fr.csv")
+status_fr = pd.read_csv("data/status_fr.csv")
 
 st.title("AI Litigation Tracker")
 
@@ -21,7 +24,7 @@ st.write("With this tool, you will be able to track all past and ongoing AI liti
 
 with st.sidebar:
     st.title("Track AI Litigation")
-    pages = ["Track AI Litigation","Most recent activity" , "Explore Issues","Explore Settled Cases", "Explore Locations"]
+    pages = ["Track AI Litigation","Most recent activity" , "Explore Issues","Explore Results", "Explore Locations"]
     selected_page = st.sidebar.radio("Select Page", pages)
     #st.sidebar.text("AI Litigation Database – Search. \n URL: https://blogs.gwu.edu/law-eti/ai-litigation-database-search/. \n Last accessed on 1/30/2024")
     citation_html = """
@@ -43,52 +46,12 @@ with st.sidebar:
 
 # Create content for each page
 if selected_page == "Track AI Litigation":
+    n_lawsuits = df.shape[0]
+    st.markdown(f"There are currently **{n_lawsuits}** past and ongoing lawsuits in the database.")
 
-    # Add content for Page 1
+    st.subheader('Clearview AI and ChatGPT Top the List of Most-Sued Algorithms', divider='gray')
 
-    st.header('AI Disputes Reached Record Levels in 2023', divider='gray')
-
-    # Preprocessing: getting year
-    df['Date Action Filed'] = pd.to_datetime(df['Date Action Filed'], errors='coerce')
-    df['Year Filed'] = df['Date Action Filed'].dt.year
-
-    def num_cases(column):
-        counts = column.value_counts()
-        freq = counts.reset_index()
-        freq.columns = ["Year", "Frequency"]
-        freq = freq.sort_values(by='Year', ascending=True)
-        freq = freq.reset_index(drop=True)
-        return freq
-
-    year_freq_df = num_cases(df['Year Filed'])
-
-    st.bar_chart(data = year_freq_df, x= "Year", y="Frequency", color="#6200ff")
-
-    st.header('Clearview AI and ChatGPT Top the List of Most-Sued Algorithms', divider='gray')
-
-    algorithm = df['Algorithm'].str.split(', ')
-    algorithm = algorithm.dropna()
-    algo_list = [keyword.strip() for sublist in algorithm for keyword in sublist]
-
-    algo_list = pd.Series(algo_list)
-
-    value_counts = algo_list.value_counts()
-    # Identify values that occur only once
-    single_occurrences = value_counts[value_counts == 1].index
-    # Replace these values with 'Other' in the original DataFrame
-    algo_list = algo_list.replace(single_occurrences, 'Other')
-
-    # Recalculate value counts
-    counts = algo_list.value_counts()
-    freq = counts.reset_index()
-    freq.columns = ["Algorithm", "Frequency"]
-    freq = freq.reset_index(drop=True)
-    freq = freq.sort_values(by='Algorithm', ascending=False)
-    #st.bar_chart(data = freq, x= "Algorithm", y="Frequency", color="#6200ff")
-
-
-
-    chart = alt.Chart(freq).mark_bar(color='#6200ff').encode(
+    chart = alt.Chart(algo_fr).mark_bar(color='#6200ff').encode(
             x=alt.X('Algorithm', sort='-y'),
             y='Frequency'
         )
@@ -97,54 +60,39 @@ if selected_page == "Track AI Litigation":
     st.altair_chart(chart, use_container_width=True)
 
         # Create a Pie Chart
-
-        # Create a Pie Chart
-    piechart = alt.Chart(freq).mark_arc().encode(
+    piechart = alt.Chart(algo_fr).mark_arc().encode(
         theta=alt.Theta(field='Frequency', type='quantitative', stack = "normalize"),
         color=alt.Color(field='Algorithm', type='nominal', sort = "ascending"),
         order=alt.Order(field='Frequency', type= 'quantitative', sort = "ascending"), 
         tooltip=['Algorithm', 'Frequency']
     )
 
+    st.subheader('AI Disputes Reached Record Levels in 2023', divider='gray')
+
+    st.bar_chart(data = year_freq_df, x= "Year", y="Frequency", color="#6200ff")
+
+
     # Display the Layered Chart in the Streamlit app
-    st.altair_chart(piechart, use_container_width=True)
+    #st.altair_chart(piechart, use_container_width=True)
 
-    st.header('Most cases are still ongoing', divider='gray')
-    df['Status'] = df['Status'].fillna("")
-    def categorize_status(status):
-        if status == "Active":
-            return 'Active'
-        if "Settle" in status:
-            return "Settled"
-        elif 'Inactive' in status:
-            return 'Inactive'
-        elif 'Withdrawn' in status:
-            return 'Withdrawn'
-        elif 'Closed' in status:
-            return 'Closed'
-        elif "Active" in status:
-            return "Active"
-        elif status == "":
-            return "Not specified"
-        else:
-            return 'Unknown'  # Handle other cases if needed
+    st.subheader('Most cases are still ongoing:', divider='gray')
+    stat_counts = df["Status_Cat"].value_counts()
+    freq = stat_counts.reset_index()
+    freq.columns = ["Status", "Frequency"]
+    freq = freq.sort_values(by="Status", ascending=True)
+    freq = freq.reset_index(drop=True)
+    #sorted_status = status_counts.groupby('Status_Cat')['count'].sum()
+    #sorted_status = status_counts.sort_values()
 
-    # Apply the categorize_status function to create the "Status_Cat" column
-    df['Status_Cat'] = df['Status'].apply(categorize_status)
-
-    # Radio button for selection
-    #st.write(df)
-        
-    # Calculate the value counts of each category
-    value_counts = df['Status_Cat'].value_counts().reset_index()
-    value_counts.columns = ['Status', 'Count']
-    # Create a pie chart using Vega-Lite
-    piechart2 = alt.Chart(value_counts).mark_arc().encode(
-        theta=alt.Theta(field='Count', type='quantitative', stack = "normalize"),
-        color=alt.Color(field='Status', type='nominal', sort = "ascending"),
-        order=alt.Order(field='Count', type= 'quantitative', sort = "ascending"), 
-        tooltip=['Status', 'Count']
-    )
+    # Create the pie chart
+    piechart2 = alt.Chart(freq).mark_arc().encode(
+        theta=alt.Theta(field='Frequency', type='quantitative', stack="normalize"),
+        color=alt.Color(field='Status', type='nominal', 
+                        sort=alt.EncodingSortField(field='Frequency', op='sum', order='ascending'),
+                        legend=alt.Legend(title='Status')),
+        order=alt.Order(field='Frequency', type='quantitative', sort='ascending'),
+        tooltip=['Status', 'Frequency']
+)
 
     # Display the pie chart using Altair
     st.altair_chart(piechart2, use_container_width=True)
@@ -153,17 +101,18 @@ if selected_page == "Track AI Litigation":
 
 elif selected_page == "Explore Issues":
     st.header("What issues are at stake?")
+    df["Algorithm"] = df["Algorithm"].fillna("N/A")
     df["Issues"] = df["Issues"].fillna("")
     expressions = df["Issues"].str.lower().str.split(', ')
     all_expressions = ' '.join([expression for expressions_list in expressions for expression in expressions_list])
-    wordcloud = WordCloud(font_path="AbhayaLibre-Regular.ttf", width=800, height=400, background_color="white", colormap="magma").generate(all_expressions)
+    all_expressions = all_expressions.replace(" lack", "")
+    all_expressions = all_expressions.replace(" use", "")
+    wordcloud = WordCloud(font_path="data/AbhayaLibre-Regular.ttf", width=800, height=400, background_color="white", colormap="magma").generate(all_expressions)
 
     # Display the word cloud using Matplotlib
     plt.figure(figsize=(10, 5))
     plt.imshow(wordcloud)
     plt.axis("off")
-
-    
     st.pyplot()
 
     issues = df['Issues'].str.split(', ')
@@ -177,15 +126,17 @@ elif selected_page == "Explore Issues":
     
     # Filter the DataFrame based on selected issues
     filtered_df = df[df['Issues'].str.contains(selected_issue, case=False, na=False)]
+    case_count = len(filtered_df)
 
-
-
-    
+    if case_count == 1:
+        summary_text = f"There is {case_count} {selected_issue} case in the database. Learn more about it here:"        
+    else:
+        summary_text = f"There are {case_count} {selected_issue} cases in the database. Learn more about them here:"       
+    st.markdown(summary_text)
     # Display the filtered DataFrame
-    st.subheader("Explore selected cases in table form:")
-    st.write(filtered_df[["Caption", "Brief Description", "Algorithm", "Jurisdiction", "Application Areas", "Cause of Action", "Date Action Filed", "Link", "Status"]])
+    #st.subheader("Explore selected cases in table form:")
+    #st.write(filtered_df[["Caption", "Brief Description", "Algorithm", "Jurisdiction", "Application Areas", "Cause of Action", "Date Action Filed", "Link", "Status"]])
 
-    st.subheader("Explore selected cases in more detail:")
     # Display each row as Markdown
     for index, row in filtered_df.iterrows():
         st.write(f"## {row['Caption']}")
@@ -202,53 +153,70 @@ elif selected_page == "Explore Issues":
 elif selected_page == "Most recent activity":
     st.header('Explore cases with the most recent activity', divider='gray')
     df["Algorithm"] = df["Algorithm"].fillna("N/A")
+    df["recent_activity"] = df["recent_activity"].fillna("Not specified")
     df['New Activity'] = pd.to_datetime(df['New Activity'], errors='coerce')
     df_sorted = df.sort_values(by='New Activity', ascending=False)
     top_10_cases = df_sorted.head(10)
+    counter=0
     for index, row in top_10_cases.iterrows():
-        st.write(f"### **New Activity:** {row['New Activity'].strftime('%B %dth %Y')}")
-        st.write(f"### {row['Caption']}")
-        st.write(f"**Brief Description:** {row['Brief Description']}")
-        st.write(f"**Algorithm:** {row['Algorithm']}")
-        st.write(f"**Jurisdiction:** {row['Jurisdiction']}")
-        st.write(f"**Application Areas:** {row['Application Areas']}")
-        st.write(f"**Cause of Action:** {row['Cause of Action']}")
-        st.write(f"**Date Action Filed:** {row['Date Action Filed']}")
-        st.write(f"**Find out more:** {row['Link']}")
-        st.write(f"**Status:** {row['Status']}")
+        st.write(f"#### {row['Caption']}")
+        st.write(f" **Date Of New Activity:** {row['New Activity'].strftime('%B %dth %Y')}")
+        st.write(f"**Recent Activity:** {row['recent_activity']}")
+        on = st.toggle('Read more', key= counter)
+        if on:
+            st.write(f"**Algorithm:** {row['Algorithm']}")
+            st.write(f"**Jurisdiction:** {row['Jurisdiction']}")
+            st.write(f"**Application Areas:** {row['Application Areas']}")
+            st.write(f"**Cause of Action:** {row['Cause of Action']}")
+            st.write(f"**Date Action Filed:** {row['Date Action Filed']}")
+            st.write(f"**Status:** {row['Status']}")
+            st.link_button("Find out more", row['Link'])
+
         st.markdown("---") 
+        counter +=1
 
 
 
-elif selected_page == "Explore Settled Cases":
-    st.header('Explore settled cases', divider='gray')
-
-    df['Status'] = df['Status'].fillna('')
-    df['Settled'] = df['Status'].apply(lambda x: 1 if 'settle' in x.lower() else 0)
-
-    filtered_df = df[df['Settled'] == 1]
-    filtered_df = filtered_df[["Caption", "Brief Description", "Algorithm", "Jurisdiction", "Application Areas", "Cause of Action", "Issues", "Link"]]
-
-    #st.write(filtered_df)
-
-        # Create a list of captions for the table of contents
-
+elif selected_page == "Explore Results":
+    st.subheader('Explore results of settled and decided cases', divider='gray')
+    df["Algorithm"] = df["Algorithm"].fillna("N/A")
+    df["sig_summary"] = df["sig_summary"].fillna("N/A")
+    decisions = set(df["Status_Cat"])
+    selection = st.radio(
+        "Which cases would you like to look at?",
+        decisions)
+    
+    start_year, end_year = st.select_slider(
+        'In what time frame?',
+        options=[2004, 2005, 2006, 2007, 2008, 2009, 2010,
+                 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020,
+                 2021, 2022, 2023, 2024],
+        value=(2004, 2024))
+    filtered_df = df[(df['Status_Cat'] == selection)]
+    filtered_df = filtered_df[(filtered_df['Year Filed'] >= start_year) & (filtered_df['Year Filed'] <= end_year)]
+    
+    counter=100
     # Display each row as Markdown text with caption as section anchor
     for index, row in filtered_df.iterrows():
         # Use Caption as the anchor for the section
         st.markdown(f"## {row['Caption']}")
         # Display other columns as text
-        st.write(f"**Brief Description:** {row['Brief Description']}")
-        st.write(f"**Algorithm:** {row['Algorithm']}")
-        st.write(f"**Jurisdiction:** {row['Jurisdiction']}")
-        st.write(f"**Application Areas:** {row['Application Areas']}")
-        st.write(f"**Cause of Action:** {row['Cause of Action']}")
-        st.write(f"**Issues:** {row['Issues']}")
-        st.write(f"**Find out more:** {row['Link']}")
+        st.write(f"**Result Summary:** {row['sig_summary']}")
+        on = st.toggle('Read more', key= counter)
+        if on:
+            st.write(f"**Extended Summary:** {row['ext_summary']}")
+            st.write(f"**Algorithm:** {row['Algorithm']}")
+            st.write(f"**Jurisdiction:** {row['Jurisdiction']}")
+            st.write(f"**Application Areas:** {row['Application Areas']}")
+            st.write(f"**Cause of Action:** {row['Cause of Action']}")
+            st.write(f"**Issues:** {row['Issues']}")
+            st.link_button("Find out more", row['Link'])
+
         st.write("---")  # Separator between entries
+        counter += 1
 
 elif selected_page == "Explore Locations":
-    st.header('Where have cases been filed (only includes US locations)?', divider='gray')
+    st.subheader('California is the US state with the most litigation filings', divider='gray')
 # Function to classify the place based on the jurisdiction
     def classify_place(jurisdiction):
         if 'international' in jurisdiction.lower():
@@ -280,7 +248,7 @@ elif selected_page == "Explore Locations":
     frequency_df = frequency.reset_index()
     frequency_df.columns = ['NAME', 'Frequency']
 
-    with open("us-states.json") as geo:
+    with open("data/us-states.json") as geo:
         states_geojson = json.load(geo)
 
     # Create the choropleth map
