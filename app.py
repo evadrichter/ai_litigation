@@ -109,7 +109,7 @@ if selected_page == "Track AI Litigation":
     # Display the Layered Chart in the Streamlit app
     st.altair_chart(piechart, use_container_width=True)
 
-    st.header('Most cases are stil ongoing', divider='gray')
+    st.header('Most cases are still ongoing', divider='gray')
     df['Status'] = df['Status'].fillna("")
     def categorize_status(status):
         if status == "Active":
@@ -200,13 +200,13 @@ elif selected_page == "Explore Issues":
         st.markdown("---")  # Add a horizontal line between rows
 
 elif selected_page == "Most recent activity":
-    st.header('Explore 10 cases by most recent activity', divider='gray')
-
+    st.header('Explore cases with the most recent activity', divider='gray')
+    df["Algorithm"] = df["Algorithm"].fillna("N/A")
     df['New Activity'] = pd.to_datetime(df['New Activity'], errors='coerce')
     df_sorted = df.sort_values(by='New Activity', ascending=False)
     top_10_cases = df_sorted.head(10)
     for index, row in top_10_cases.iterrows():
-        st.write(f"### {row['New Activity'].strftime('%B %dth %Y')}")
+        st.write(f"### **Recent Activity:** {row['New Activity'].strftime('%B %dth %Y')}")
         st.write(f"### {row['Caption']}")
         st.write(f"**Brief Description:** {row['Brief Description']}")
         st.write(f"**Algorithm:** {row['Algorithm']}")
@@ -221,7 +221,6 @@ elif selected_page == "Most recent activity":
 
 
 elif selected_page == "Explore Settled Cases":
-    st.title("Explore settled cases")
     st.header('Explore settled cases', divider='gray')
 
     df['Status'] = df['Status'].fillna('')
@@ -233,14 +232,6 @@ elif selected_page == "Explore Settled Cases":
     #st.write(filtered_df)
 
         # Create a list of captions for the table of contents
-    captions = filtered_df['Caption'].tolist()
-
-        # Display each row as a hyperlink in the table of contents
-    for caption in captions:
-        # Create a hyperlink with the caption as text and link to the corresponding section
-        st.write(f"<a href='#{caption.replace(' ', '-')}'>{caption}</a>", unsafe_allow_html=True)
-
-    st.write("---")  # Separator between table of contents and content
 
     # Display each row as Markdown text with caption as section anchor
     for index, row in filtered_df.iterrows():
