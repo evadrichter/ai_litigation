@@ -76,6 +76,6 @@ def categorize_status(status):
 df['Status_Cat'] = df['Status'].apply(categorize_status)
 
 
-df['sig_summary'] = df['sig_summary'].str.replace("Summary of Facts and Activity to Date", "Summary of Facts and Activity to Date\n")
+df['sig_summary'] = df['sig_summary'].str.replace("Summary of Facts and Activity to Date", "Summary of Facts and Activity to Date: ")
 df['sig_summary'] = df['sig_summary'].str.replace("Summary of Significance", "")
 df.to_csv("data/litigation_ext.csv", encoding="utf-8")

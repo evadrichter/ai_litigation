@@ -20,7 +20,8 @@ status_fr = pd.read_csv("data/status_fr.csv")
 
 st.title("AI Litigation Tracker")
 
-st.write("With this tool, you will be able to track all past and ongoing AI litigation, including litigation against machine learning algorithms. The data was obtained from Georgetown Law’s AI Litigation Database (https://blogs.gwu.edu/law-eti/ai-litigation-database-search/).")
+st.write("With this tool, you will be able to track all past and ongoing AI litigation, including litigation against machine learning algorithms. The data was obtained from George Washington University's Law’s AI Litigation Database (https://blogs.gwu.edu/law-eti/ai-litigation-database-search/).")
+st.write(":point_left: See here for more pages")
 
 with st.sidebar:
     st.title("Track AI Litigation")
@@ -30,17 +31,20 @@ with st.sidebar:
     citation_html = """
     <div style="position: fixed; top: 60px; left: 20px;">
     AI Litigation Database  </div>
-
+    
 """
+
     feedback_html = """
 <div style="position: fixed; bottom: 20px; left: 20px;">
-    <a href="mailto:evarichter@hks.harvard.edu" style="text-decoration: none;">
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLScKkIfXNukPPMuPyp3cX_uKQ9az9uFPz_mHQEs9YR7Zl0nCmg/viewform" style="text-decoration: none;">
         <button style="background-color: #6200ff; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
             Got any feedback?
         </button>
     </a>
 </div>
 """
+    st.write("AI Litigation Database. Washington DC: The George Washington University Law. 2024. https://blogs.gwu.edu/law-eti/ai-litigation-database/")
+
     st.sidebar.markdown(citation_html, unsafe_allow_html=True)
     st.sidebar.markdown(feedback_html, unsafe_allow_html=True)
 
@@ -146,8 +150,8 @@ elif selected_page == "Explore Issues":
         st.write(f"**Application Areas:** {row['Application Areas']}")
         st.write(f"**Cause of Action:** {row['Cause of Action']}")
         st.write(f"**Date Action Filed:** {row['Date Action Filed']}")
-        st.write(f"**Find out more:** {row['Link']}")
         st.write(f"**Status:** {row['Status']}")
+        st.link_button("Find out more", row['Link'])
         st.markdown("---")  # Add a horizontal line between rows
 
 elif selected_page == "Most recent activity":
