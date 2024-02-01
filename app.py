@@ -43,7 +43,7 @@ with st.sidebar:
     </a>
 </div>
 """
-    st.write("AI Litigation Database. Washington DC: The George Washington University Law. 2024. https://blogs.gwu.edu/law-eti/ai-litigation-database/")
+    #st.write("AI Litigation Database. Washington DC: The George Washington University Law. 2024. https://blogs.gwu.edu/law-eti/ai-litigation-database/")
 
     st.sidebar.markdown(citation_html, unsafe_allow_html=True)
     st.sidebar.markdown(feedback_html, unsafe_allow_html=True)
