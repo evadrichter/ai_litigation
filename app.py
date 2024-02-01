@@ -26,7 +26,7 @@ st.write(":point_left: See here for more pages")
 with st.sidebar:
     st.title("Track AI Litigation")
     pages = ["Track AI Litigation","Most recent activity" , "Explore Issues","Explore Results", "Explore Locations"]
-    selected_page = st.sidebar.radio("Select Page", pages)
+    selected_page = st.sidebar.radio("Select Page: ", pages)
     #st.sidebar.text("AI Litigation Database – Search. \n URL: https://blogs.gwu.edu/law-eti/ai-litigation-database-search/. \n Last accessed on 1/30/2024")
     citation_html = """
     <div style="position: fixed; top: 60px; left: 20px;">
