@@ -184,6 +184,7 @@ elif selected_page == "Most recent activity":
         st.write(f"**Recent Activity:** {row['recent_activity']}")
         on = st.toggle('Read more', key= counter)
         if on:
+            st.write(f"**Brief Description:** {row['Brief Description']}")
             st.write(f"**Algorithm:** {row['Algorithm']}")
             st.write(f"**Jurisdiction:** {row['Jurisdiction']}")
             st.write(f"**Application Areas:** {row['Application Areas']}")
