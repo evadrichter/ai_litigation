@@ -99,9 +99,25 @@ if selected_page == "Track AI Litigation":
 )
 
     # Display the pie chart using Altair
-    st.altair_chart(piechart2, use_container_width=True)
+    #st.altair_chart(piechart2, use_container_width=True)
 
+    status_fr = pd.read_csv("data/status_fr.csv")
+    status_fr['Status_Cat'] = status_fr['Status_Cat'].apply(lambda x: x + " cases")
+    custom_color_scheme = ["#008B76", "#6200FF", "#DF0000", "#FFBE38", "#FF7343", "#B0A8B9", "#6C9EB4", "#4B4453"]
 
+    fig = px.treemap(status_fr, 
+                 path=['Status_Cat'], 
+                 values='count',
+                 color_discrete_sequence=custom_color_scheme)
+
+    # Customize the layout
+    fig.update_layout(
+        #title='Status of cases: ',
+        margin=dict(t=50, b=0, r=0, l=0)
+    )
+
+    # Show the plot
+    st.plotly_chart(fig)
 
 elif selected_page == "Explore Issues":
     st.header("What issues are at stake?")
@@ -206,6 +222,7 @@ elif selected_page == "Explore Results":
         st.markdown(f"## {row['Caption']}")
         # Display other columns as text
         st.write(f"**Result Summary:** {row['sig_summary']}")
+        st.write(f"**Status:** {row['Status']}")
         on = st.toggle('Read more', key= counter)
         if on:
             st.write(f"**Extended Summary:** {row['ext_summary']}")

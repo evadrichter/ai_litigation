@@ -1,6 +1,7 @@
 import datetime as dt
 import pandas as pd
 import matplotlib.pyplot as plt
+import plotly.express as px
 import streamlit as st
 import numpy as np
 from wordcloud import WordCloud
@@ -11,52 +12,36 @@ import plotly.express as px
 import json
 
 
-df = pd.read_csv("litigation_ext.csv")
+df = pd.read_csv("data/litigation_ext.csv")
 
-# Function to classify the place based on the jurisdiction
-def classify_place(jurisdiction):
-    if 'international' in jurisdiction.lower():
-        return 'International'
-    elif "cook county" in jurisdiction.lower():
-        return "Illinois"
-    elif "ca." in jurisdiction.lower() or "cal" in jurisdiction.lower():
-        return "California"
-    elif "n.y." in jurisdiction.lower():
-        return "New York"
-    elif "ga." in jurisdiction.lower():
-        return "Georgia"
-    elif "del." in jurisdiction.lower():
-        return "Delaware"
-    elif "Tenn." in jurisdiction.lower():
-        return "Tennessee"
-    else:
-        # Check against state names and abbreviations
-        for state in us.states.STATES:
-            if state.name in jurisdiction or state.abbr in jurisdiction:
-                return state.name
-        return 'Other'
+data = pd.read_csv("data/status_fr.csv")
+data['Status_Cat'] = data['Status_Cat'].apply(lambda x: x + " cases")
 
-# Apply the function to create the new 'Place' column
-df['NAME'] = df['Jurisdiction'].apply(classify_place)
+# issue = df['Issues'].str.split(', ')
+# issue = issue.dropna()
+# issue_list = [keyword.strip() for sublist in issue for keyword in sublist]
 
-frequency = df['NAME'].value_counts()
+# print(issue_list)
 
-# Convert the frequency Series to a DataFrame
-frequency_df = frequency.reset_index()
-frequency_df.columns = ['NAME', 'Frequency']
+# counts = pd.Series(issue_list).value_counts()
+# issues = counts.reset_index()
+# issues.columns = ["Issue", "Frequency"]
 
-with open("us-states.json") as geo:
-    states_geojson = json.load(geo)
+custom_color_scheme = ["#008B76", "#6200FF", "#DF0000", "#B0A8B9", "#FF7343", "#FFBE38", "#6C9EB4", "#FD9BFF"]
 
-# Create the choropleth map
-fig = px.choropleth(frequency_df, 
-                    geojson=states_geojson, 
-                    locations='NAME', 
-                    featureidkey="properties.NAME",
-                    color='Frequency',
-                    color_continuous_scale="ylorrd",
-                    scope="usa",
-                    hover_name="NAME")
-fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
+
+fig = px.treemap(data, 
+                 path=['Status_Cat'], 
+                 values='count',
+                 color_discrete_sequence=custom_color_scheme)
+
+# Customize the layout
+fig.update_layout(
+    #title='Status Category Treemap',
+    margin=dict(t=50, b=0, r=0, l=0)
+)
+
+# Show the plot
 fig.show()
+
