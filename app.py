@@ -20,8 +20,8 @@ status_fr = pd.read_csv("data/status_fr.csv")
 
 st.title("AI Litigation Tracker")
 
-st.write("With this tool, you will be able to track all past and ongoing AI litigation, including litigation against machine learning algorithms. The data was obtained from George Washington University's Law’s AI Litigation Database (https://blogs.gwu.edu/law-eti/ai-litigation-database-search/).")
-st.write(":point_left: See here for more pages")
+st.write("With this tool, you will be able to track all past and ongoing AI litigation, including litigation against machine learning algorithms. The data was obtained from George Washington University's 'Law AI Litigation Database' (https://blogs.gwu.edu/law-eti/ai-litigation-database-search/).")
+st.write(":point_left: If on mobile, click on the arrow in the upper-left corner for more pages.")
 
 with st.sidebar:
     st.title("Track AI Litigation")
