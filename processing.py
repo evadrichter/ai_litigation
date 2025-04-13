@@ -4,12 +4,12 @@ import datetime as dt
 
 # IF YOU WANT TO GET THE NEWEST DATA, EXECUTE THIS:
 
-# filename = "get_data.py"  
+# filename = "ai_litigation/get_data.py"  
 
 # with open(filename, "r") as file:
 #     exec(file.read())
 
-df = pd.read_csv("data/litigation_ext.csv")
+df = pd.read_csv("ai_litigation/data/litigation_ext.csv")
 
 df['Date Action Filed'] = pd.to_datetime(df['Date Action Filed'], errors='coerce')
 df['Year Filed'] = df['Date Action Filed'].dt.year
@@ -28,7 +28,7 @@ def num_cases(column):
 year_freq_df = num_cases(df['Year Filed'])
 year_freq_df.columns = ["Year", "Frequency"]
 
-year_freq_df.to_csv("data/year_fr.csv", encoding='utf-8')
+year_freq_df.to_csv("ai_litigation/data/year_fr.csv", encoding='utf-8')
 
 algorithm = df['Algorithm'].str.split(', ')
 algorithm = algorithm.dropna()
@@ -49,7 +49,7 @@ algo_freq.columns = ["Algorithm", "Frequency"]
 algo_freq = algo_freq.reset_index(drop=True)
 algo_freq = algo_freq.sort_values(by='Frequency', ascending=False)
 
-algo_freq.to_csv("data/algo_fr.csv", encoding='utf-8')
+algo_freq.to_csv("ai_litigation/data/algo_fr.csv", encoding='utf-8')
 
 df['Status'] = df['Status'].fillna("")
 def categorize_status(status):
@@ -78,4 +78,4 @@ df['Status_Cat'] = df['Status'].apply(categorize_status)
 
 df['sig_summary'] = df['sig_summary'].str.replace("Summary of Facts and Activity to Date", "Summary of Facts and Activity to Date: ")
 df['sig_summary'] = df['sig_summary'].str.replace("Summary of Significance", "")
-df.to_csv("data/litigation_ext.csv", encoding="utf-8")
+df.to_csv("ai_litigation/data/litigation_ext.csv", encoding="utf-8")

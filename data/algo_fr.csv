@@ -1,12 +1,6 @@
 ,Algorithm,Frequency
-0,Other,23
-1,Clearview,15
-2,ChatGPT,13
-3,Autopilot,7
-4,Stable Diffusion,4
-5,MiDAS,3
-6,LLaMA,3
-7,COMPAS,3
-8,TrueAllele,3
-9,Copilot,2
-10,DABUS,2
+0,Other,10
+1,ChatGPT,7
+2,Clearview,5
+3,Claude,2
+4,MiDAS,2
