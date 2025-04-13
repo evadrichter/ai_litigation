@@ -13,10 +13,10 @@ import json
 st.set_option('deprecation.showPyplotGlobalUse', False)
 
 
-df = pd.read_csv("ai_litigation/data/litigation_ext.csv")
-year_freq_df = pd.read_csv("ai_litigation/data/year_fr.csv")
-algo_fr = pd.read_csv("ai_litigation/data/algo_fr.csv")
-status_fr = pd.read_csv("ai_litigation/data/status_fr.csv")
+df = pd.read_csv("data/litigation_ext.csv")
+year_freq_df = pd.read_csv("data/year_fr.csv")
+algo_fr = pd.read_csv("data/algo_fr.csv")
+status_fr = pd.read_csv("data/status_fr.csv")
 
 st.title("AI Litigation Tracker")
 
@@ -101,7 +101,7 @@ if selected_page == "Track AI Litigation":
     # Display the pie chart using Altair
     #st.altair_chart(piechart2, use_container_width=True)
 
-    status_fr = pd.read_csv("ai_litigation/data/status_fr.csv")
+    status_fr = pd.read_csv("data/status_fr.csv")
     status_fr['Status_Cat'] = status_fr['Status_Cat'].apply(lambda x: x + " cases")
     custom_color_scheme = ["#008B76", "#6200FF", "#DF0000", "#FFBE38", "#FF7343", "#B0A8B9", "#6C9EB4", "#4B4453"]
 
@@ -127,7 +127,7 @@ elif selected_page == "Explore Issues":
     all_expressions = ' '.join([expression for expressions_list in expressions for expression in expressions_list])
     all_expressions = all_expressions.replace(" lack", "")
     all_expressions = all_expressions.replace(" use", "")
-    wordcloud = WordCloud(font_path="ai_litigation/data/AbhayaLibre-Regular.ttf", width=800, height=400, background_color="white", colormap="magma").generate(all_expressions)
+    wordcloud = WordCloud(font_path="data/AbhayaLibre-Regular.ttf", width=800, height=400, background_color="white", colormap="magma").generate(all_expressions)
 
     # Display the word cloud using Matplotlib
     plt.figure(figsize=(10, 5))
@@ -270,7 +270,7 @@ elif selected_page == "Explore Locations":
     frequency_df = frequency.reset_index()
     frequency_df.columns = ['NAME', 'Frequency']
 
-    with open("ai_litigation/data/us-states.json") as geo:
+    with open("data/us-states.json") as geo:
         states_geojson = json.load(geo)
 
     # Create the choropleth map
