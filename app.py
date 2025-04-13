@@ -16,7 +16,6 @@ st.set_option('deprecation.showPyplotGlobalUse', False)
 df = pd.read_csv("data/litigation_ext.csv")
 year_freq_df = pd.read_csv("data/year_fr.csv")
 algo_fr = pd.read_csv("data/algo_fr.csv")
-status_fr = pd.read_csv("data/status_fr.csv")
 
 st.title("AI Litigation Tracker")
 
@@ -25,7 +24,7 @@ st.write(":point_left: If on mobile, click on the arrow in the upper-left corner
 
 with st.sidebar:
     st.title("Track AI Litigation")
-    pages = ["Track AI Litigation","Most recent activity" , "Explore Issues","Explore Results", "Explore Locations"]
+    pages = ["Track AI Litigation","Most recent activity" , "Explore Issues", "Explore Locations"]
     selected_page = st.sidebar.radio("Select Page: ", pages)
     #st.sidebar.text("AI Litigation Database – Search. \n URL: https://blogs.gwu.edu/law-eti/ai-litigation-database-search/. \n Last accessed on 1/30/2024")
     citation_html = """
@@ -79,45 +78,11 @@ if selected_page == "Track AI Litigation":
     # Display the Layered Chart in the Streamlit app
     #st.altair_chart(piechart, use_container_width=True)
 
-    st.subheader('Most cases are still ongoing:', divider='gray')
-    stat_counts = df["Status_Cat"].value_counts()
-    freq = stat_counts.reset_index()
-    freq.columns = ["Status", "Frequency"]
-    freq = freq.sort_values(by="Status", ascending=True)
-    freq = freq.reset_index(drop=True)
-    #sorted_status = status_counts.groupby('Status_Cat')['count'].sum()
-    #sorted_status = status_counts.sort_values()
 
-    # Create the pie chart
-    piechart2 = alt.Chart(freq).mark_arc().encode(
-        theta=alt.Theta(field='Frequency', type='quantitative', stack="normalize"),
-        color=alt.Color(field='Status', type='nominal', 
-                        sort=alt.EncodingSortField(field='Frequency', op='sum', order='ascending'),
-                        legend=alt.Legend(title='Status')),
-        order=alt.Order(field='Frequency', type='quantitative', sort='ascending'),
-        tooltip=['Status', 'Frequency']
-)
 
     # Display the pie chart using Altair
     #st.altair_chart(piechart2, use_container_width=True)
 
-    status_fr = pd.read_csv("data/status_fr.csv")
-    status_fr['Status_Cat'] = status_fr['Status_Cat'].apply(lambda x: x + " cases")
-    custom_color_scheme = ["#008B76", "#6200FF", "#DF0000", "#FFBE38", "#FF7343", "#B0A8B9", "#6C9EB4", "#4B4453"]
-
-    fig = px.treemap(status_fr, 
-                 path=['Status_Cat'], 
-                 values='count',
-                 color_discrete_sequence=custom_color_scheme)
-
-    # Customize the layout
-    fig.update_layout(
-        #title='Status of cases: ',
-        margin=dict(t=50, b=0, r=0, l=0)
-    )
-
-    # Show the plot
-    st.plotly_chart(fig)
 
 elif selected_page == "Explore Issues":
     st.header("What issues are at stake?")
@@ -155,7 +120,7 @@ elif selected_page == "Explore Issues":
     st.markdown(summary_text)
     # Display the filtered DataFrame
     #st.subheader("Explore selected cases in table form:")
-    #st.write(filtered_df[["Caption", "Brief Description", "Algorithm", "Jurisdiction", "Application Areas", "Cause of Action", "Date Action Filed", "Link", "Status"]])
+    #st.write(filtered_df[["Caption", "Brief Description", "Algorithm", "Jurisdiction", "Application Areas", "Cause of Action", "Date Action Filed", "Link"]])
 
     # Display each row as Markdown
     for index, row in filtered_df.iterrows():
@@ -166,14 +131,12 @@ elif selected_page == "Explore Issues":
         st.write(f"**Application Areas:** {row['Application Areas']}")
         st.write(f"**Cause of Action:** {row['Cause of Action']}")
         st.write(f"**Date Action Filed:** {row['Date Action Filed']}")
-        st.write(f"**Status:** {row['Status']}")
         st.link_button("Find out more", row['Link'])
         st.markdown("---")  # Add a horizontal line between rows
 
 elif selected_page == "Most recent activity":
     st.header('Explore cases with the most recent activity', divider='gray')
     df["Algorithm"] = df["Algorithm"].fillna("N/A")
-    df["recent_activity"] = df["recent_activity"].fillna("Not specified")
     df['New Activity'] = pd.to_datetime(df['New Activity'], errors='coerce')
     df_sorted = df.sort_values(by='New Activity', ascending=False)
     top_10_cases = df_sorted.head(10)
@@ -181,7 +144,6 @@ elif selected_page == "Most recent activity":
     for index, row in top_10_cases.iterrows():
         st.write(f"#### {row['Caption']}")
         st.write(f" **Date Of New Activity:** {row['New Activity'].strftime('%B %dth %Y')}")
-        st.write(f"**Recent Activity:** {row['recent_activity']}")
         on = st.toggle('Read more', key= counter)
         if on:
             st.write(f"**Brief Description:** {row['Brief Description']}")
@@ -190,52 +152,12 @@ elif selected_page == "Most recent activity":
             st.write(f"**Application Areas:** {row['Application Areas']}")
             st.write(f"**Cause of Action:** {row['Cause of Action']}")
             st.write(f"**Date Action Filed:** {row['Date Action Filed']}")
-            st.write(f"**Status:** {row['Status']}")
             st.link_button("Find out more", row['Link'])
 
         st.markdown("---") 
         counter +=1
 
 
-
-elif selected_page == "Explore Results":
-    st.subheader('Explore results of settled and decided cases', divider='gray')
-    df["Algorithm"] = df["Algorithm"].fillna("N/A")
-    df["sig_summary"] = df["sig_summary"].fillna("N/A")
-    decisions = set(df["Status_Cat"])
-    selection = st.radio(
-        "Which cases would you like to look at?",
-        decisions)
-    
-    start_year, end_year = st.select_slider(
-        'In what time frame?',
-        options=[2004, 2005, 2006, 2007, 2008, 2009, 2010,
-                 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020,
-                 2021, 2022, 2023, 2024],
-        value=(2004, 2024))
-    filtered_df = df[(df['Status_Cat'] == selection)]
-    filtered_df = filtered_df[(filtered_df['Year Filed'] >= start_year) & (filtered_df['Year Filed'] <= end_year)]
-    
-    counter=100
-    # Display each row as Markdown text with caption as section anchor
-    for index, row in filtered_df.iterrows():
-        # Use Caption as the anchor for the section
-        st.markdown(f"## {row['Caption']}")
-        # Display other columns as text
-        st.write(f"**Result Summary:** {row['sig_summary']}")
-        st.write(f"**Status:** {row['Status']}")
-        on = st.toggle('Read more', key= counter)
-        if on:
-            st.write(f"**Extended Summary:** {row['ext_summary']}")
-            st.write(f"**Algorithm:** {row['Algorithm']}")
-            st.write(f"**Jurisdiction:** {row['Jurisdiction']}")
-            st.write(f"**Application Areas:** {row['Application Areas']}")
-            st.write(f"**Cause of Action:** {row['Cause of Action']}")
-            st.write(f"**Issues:** {row['Issues']}")
-            st.link_button("Find out more", row['Link'])
-
-        st.write("---")  # Separator between entries
-        counter += 1
 
 elif selected_page == "Explore Locations":
     st.subheader('California is the US state with the most litigation filings', divider='gray')

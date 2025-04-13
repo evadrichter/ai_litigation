@@ -61,44 +61,10 @@ df_full["Link"] = all_links
 # ----------------------------------------
 # Extract additional data from each case
 # ----------------------------------------
-def extract_data_from_links(links, cellnumbers):
-    extracted = {num: [] for num in cellnumbers}
 
-    for link in links:
-        try:
-            driver.get(link)
-            time.sleep(1)
-            soup = BeautifulSoup(driver.page_source, 'html.parser')
-
-            for num in cellnumbers:
-                class_id = f"cbFormBlock{num}_"
-                divs = soup.find_all('div', class_=lambda val: val and class_id in val)
-
-                if divs:
-                    text = divs[0].get_text(strip=True)
-                else:
-                    text = ""
-
-                extracted[num].append(text)
-
-        except Exception as e:
-            print(f"⚠️ Error loading {link}: {e}")
-            for num in cellnumbers:
-                extracted[num].append("")
-
-    return extracted
 
 # Fields to extract
-cellnumbers = [14, 1, 2, 22]
-extracted = extract_data_from_links(df_full["Link"], cellnumbers)
 
-# Clean and assign to DataFrame
-df_full['Status'] = extracted[14]
-df_full['Case_Title'] = extracted[1]
-df_full['Summary_of_Significance'] = [
-    txt if txt.startswith("Summary") else "" for txt in extracted[2]
-]
-df_full['Recent_Activity'] = extracted[22]
 
 # Export to CSV
 df_full.to_csv("ai_litigation_full.csv", index=False, encoding='utf-8')

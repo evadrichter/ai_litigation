@@ -51,31 +51,8 @@ algo_freq = algo_freq.sort_values(by='Frequency', ascending=False)
 
 algo_freq.to_csv("ai_litigation/data/algo_fr.csv", encoding='utf-8')
 
-df['Status'] = df['Status'].fillna("")
-def categorize_status(status):
-    if "Active" in status:
-        return 'Active'
-    if "Settle" in status:
-        return "Settled"
-    elif 'Withdrawn' in status:
-        return 'Withdrawn'
-    elif 'Closed' in status:
-        return 'Closed'
-    elif status == "":
-        return "Not specified"
-    elif "Judg" in status or "Decision" in status:
-         return "Decided"
-    elif "Dismissed" in status:
-         return "Dismissed"
-    elif "Inactive" in status:
-         return "Inactive"
-    else:
-        return 'Unknown'  # Handle other cases if needed
-
-    # Apply the categorize_status function to create the "Status_Cat" column
-df['Status_Cat'] = df['Status'].apply(categorize_status)
 
 
-df['sig_summary'] = df['sig_summary'].str.replace("Summary of Facts and Activity to Date", "Summary of Facts and Activity to Date: ")
-df['sig_summary'] = df['sig_summary'].str.replace("Summary of Significance", "")
+df['Brief Description'] = df['Brief Description'].str.replace("Summary of Facts and Activity to Date", "Summary of Facts and Activity to Date: ")
+df['Brief Description'] = df['Brief Description'].str.replace("Summary of Significance", "")
 df.to_csv("ai_litigation/data/litigation_ext.csv", encoding="utf-8")

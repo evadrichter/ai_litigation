@@ -1,6 +1,19 @@
 ,Algorithm,Frequency
-0,Other,10
-1,ChatGPT,7
-2,Clearview,5
-3,Claude,2
-4,MiDAS,2
+0,Other,27
+1,ChatGPT,20
+2,Clearview,16
+3,Autopilot,7
+4,Copilot,4
+5,Stable Diffusion,4
+6,LLaMA,4
+8,TrueAllele,3
+9,MiDAS,3
+7,COMPAS,3
+10,MosaicML Pretrained Transformer,2
+11,Imagen,2
+12,Character.AI,2
+13,NeMo Megatron-GPT,2
+14,Codex,2
+15,HireVue,2
+16,Claude,2
+17,DABUS,2
